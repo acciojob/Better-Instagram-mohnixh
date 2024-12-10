@@ -1,59 +1,60 @@
-const draggables = document.querySelectorAll('.image');
-const parent = document.getElementById('parent');
+// Cypress custom command for drag and drop
+Cypress.Commands.add("dragAndDrop", (sourceSelector, targetSelector) => {
+  cy.get(sourceSelector)
+    .trigger("mousedown", { which: 1 });
 
-let draggedElement = null;
-
-// Attach event listeners to all draggable elements
-draggables.forEach((draggable) => {
-  draggable.addEventListener('dragstart', dragStart);
-  draggable.addEventListener('dragover', dragOver);
-  draggable.addEventListener('drop', drop);
-  draggable.addEventListener('dragenter', dragEnter);
-  draggable.addEventListener('dragleave', dragLeave);
+  cy.get(targetSelector)
+    .trigger("mousemove")
+    .trigger("mouseup", { force: true });
 });
 
-// Function to handle drag start
-function dragStart(event) {
-  draggedElement = event.target;
-  event.dataTransfer.effectAllowed = 'move';
-}
+// Example To-Do App Tests
+describe("Example To-Do App", () => {
+  it("All drag exists", () => {
+    for (let index = 1; index <= 6; index++) {
+      cy.get(`#drag${index}`).should("exist");
+    }
+  });
 
-// Prevent default behavior during drag over
-function dragOver(event) {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-}
+  it("Drag and drop 3rd image on 6th", () => {
+    cy.dragAndDrop("#drag3", "#drag6");
+    cy.get("#div6").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
 
-// Highlight the drop target
-function dragEnter(event) {
-  if (event.target.classList.contains('image')) {
-    event.target.classList.add('selected');
-  }
-}
+  it("Drag and drop 1st image on 5th", () => {
+    cy.dragAndDrop("#drag1", "#drag5");
+    cy.get("#div5").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
 
-// Remove highlight from the drop target
-function dragLeave(event) {
-  if (event.target.classList.contains('image')) {
-    event.target.classList.remove('selected');
-  }
-}
+  it("Drag and drop 4th image on 2nd", () => {
+    cy.dragAndDrop("#drag4", "#drag2");
+    cy.get("#div2").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
 
-// Swap the images during drop
-function drop(event) {
-  event.preventDefault();
-  const targetElement = event.target;
+  it("Drag and drop 2nd image on 3rd", () => {
+    cy.dragAndDrop("#drag2", "#drag3");
+    cy.get("#div3").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
 
-  if (targetElement.classList.contains('image') && draggedElement !== targetElement) {
-    // Swap background images
-    const draggedImage = draggedElement.style.backgroundImage;
-    const targetImage = targetElement.style.backgroundImage;
+  it("Drag and drop 5th image on 3rd", () => {
+    cy.dragAndDrop("#drag5", "#drag3");
+    cy.get("#div3").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
 
-    draggedElement.style.backgroundImage = targetImage;
-    targetElement.style.backgroundImage = draggedImage;
-  }
-
-  // Remove highlight
-  if (targetElement.classList.contains('selected')) {
-    targetElement.classList.remove('selected');
-  }
-}
+  it("Drag and drop 6th image on 1st", () => {
+    cy.dragAndDrop("#drag6", "#drag1");
+    cy.get("#div1").within(() => {
+      cy.get("img").should("have.length", 1);
+    });
+  });
+});
