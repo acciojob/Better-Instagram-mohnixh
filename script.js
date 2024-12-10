@@ -1,36 +1,47 @@
-const parent = document.getElementById('parent');
-const children = Array.from(parent.children);
 
-let draggedElement = null;
+let dragindex = 0;
+let dropindex = 0;
+let clone = "";
 
-// Add event listeners to each child div
-children.forEach((child) => {
-  child.addEventListener('dragstart', (event) => {
-    draggedElement = event.target; // Save the dragged element
-    event.target.classList.add('selected'); // Add styling for the dragged element
-  });
+const images = document.querySelectorAll(".image");
 
-  child.addEventListener('dragover', (event) => {
-    event.preventDefault(); // Prevent default behavior to allow drop
-  });
+function drag(e) {
+  e.dataTransfer.setData("text", e.target.id);
+}
 
-  child.addEventListener('drop', (event) => {
-    event.preventDefault(); // Prevent default behavior
-    if (draggedElement && draggedElement !== event.target) {
-      // Swap background images between draggedElement and drop target
-      const draggedStyle = window.getComputedStyle(draggedElement);
-      const targetStyle = window.getComputedStyle(event.target);
+function allowDrop(e) {
+  e.preventDefault();
+}
 
-      const draggedBg = draggedStyle.backgroundImage;
-      const targetBg = targetStyle.backgroundImage;
-
-      draggedElement.style.backgroundImage = targetBg;
-      event.target.style.backgroundImage = draggedBg;
+function drop(e) {
+  clone = e.target.cloneNode(true);
+  let data = e.dataTransfer.getData("text");
+  let nodelist = document.getElementById("parent").childNodes;
+  console.log(data, e.target.id);
+  for (let i = 0; i < nodelist.length; i++) {
+    if (nodelist[i].id == data) {
+      dragindex = i;
     }
-  });
+  }
 
-  child.addEventListener('dragend', () => {
-    draggedElement.classList.remove('selected'); // Remove styling after drop
-    draggedElement = null; // Reset dragged element
-  });
-});
+  dragdrop(clone);
+
+  document
+    .getElementById("parent")
+    .replaceChild(document.getElementById(data), e.target);
+
+  document
+    .getElementById("parent")
+    .insertBefore(
+      clone,
+      document.getElementById("parent").childNodes[dragindex]
+    );
+}
+
+const dragdrop = (image) => {
+  image.ondragstart = drag;
+  image.ondragover = allowDrop;
+  image.ondrop = drop;
+};
+
+images.forEach(dragdrop);
