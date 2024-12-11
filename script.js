@@ -1,45 +1,44 @@
-let dragIndex = 0;
-let dropIndex = 0;
-let clone = '';
+document.addEventListener('DOMContentLoaded', () => {
+  // Select all draggable image containers
+  const containers = document.querySelectorAll('#div1, #div2, #div3, #div4, #div5, #div6');
 
-const images = document.querySelectorAll('.image');
+  // Add drag-and-drop event listeners to each container
+  containers.forEach(container => {
+    // Make each container draggable
+    container.setAttribute('draggable', true);
 
-function drag(e) {
-  e.dataTransfer.setData('text', e.target.id);
-}
+    // Event listener for drag start
+    container.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', e.target.id); // Store the dragged element's ID
+      setTimeout(() => {
+        e.target.classList.add('dragging'); // Add visual feedback
+      }, 0);
+    });
 
-function allowDrop(e) {
-  e.preventDefault();
-}
+    // Event listener for drag end
+    container.addEventListener('dragend', (e) => {
+      e.target.classList.remove('dragging'); // Remove visual feedback
+    });
 
-function drop(e) {
-  e.preventDefault();
-  const data = e.dataTransfer.getData('text');
-  const draggedElement = document.getElementById(data);
-  const targetElement = e.target;
+    // Event listener for drag over (allow dropping)
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault(); // Allow drop operation
+    });
 
-  if (!targetElement.classList.contains('image')) return; // Ensure dropping only happens on valid targets
+    // Event listener for drop
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
 
-  clone = targetElement.cloneNode(true);
+      // Get the ID of the dragged element
+      const draggedId = e.dataTransfer.getData('text/plain');
+      const draggedElement = document.getElementById(draggedId);
 
-  // Find indexes
-  const nodeList = Array.from(document.getElementById('parent').children);
-  dragIndex = nodeList.indexOf(draggedElement);
-  dropIndex = nodeList.indexOf(targetElement);
-
-  // Replace elements
-  const parent = document.getElementById('parent');
-  parent.replaceChild(draggedElement, targetElement);
-  parent.insertBefore(clone, parent.children[dragIndex]);
-
-  // Reattach drag-and-drop handlers
-  attachHandlers(clone);
-}
-
-function attachHandlers(image) {
-  image.ondragstart = drag;
-  image.ondragover = allowDrop;
-  image.ondrop = drop;
-}
-
-images.forEach(attachHandlers);
+      // Perform the swap if dropping on a valid target and not dropping on itself
+      if (draggedElement && draggedElement !== e.target) {
+        const tempBackground = e.target.style.backgroundImage;
+        e.target.style.backgroundImage = draggedElement.style.backgroundImage;
+        draggedElement.style.backgroundImage = tempBackground;
+      }
+    });
+  });
+});
