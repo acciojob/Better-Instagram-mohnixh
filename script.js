@@ -1,12 +1,11 @@
+let dragIndex = 0;
+let dropIndex = 0;
+let clone = '';
 
-let dragindex = 0;
-let dropindex = 0;
-let clone = "";
-
-const images = document.querySelectorAll(".image");
+const images = document.querySelectorAll('.image');
 
 function drag(e) {
-  e.dataTransfer.setData("text", e.target.id);
+  e.dataTransfer.setData('text', e.target.id);
 }
 
 function allowDrop(e) {
@@ -14,34 +13,33 @@ function allowDrop(e) {
 }
 
 function drop(e) {
-  clone = e.target.cloneNode(true);
-  let data = e.dataTransfer.getData("text");
-  let nodelist = document.getElementById("parent").childNodes;
-  console.log(data, e.target.id);
-  for (let i = 0; i < nodelist.length; i++) {
-    if (nodelist[i].id == data) {
-      dragindex = i;
-    }
-  }
+  e.preventDefault();
+  const data = e.dataTransfer.getData('text');
+  const draggedElement = document.getElementById(data);
+  const targetElement = e.target;
 
-  dragdrop(clone);
+  if (!targetElement.classList.contains('image')) return; // Ensure dropping only happens on valid targets
 
-  document
-    .getElementById("parent")
-    .replaceChild(document.getElementById(data), e.target);
+  clone = targetElement.cloneNode(true);
 
-  document
-    .getElementById("parent")
-    .insertBefore(
-      clone,
-      document.getElementById("parent").childNodes[dragindex]
-    );
+  // Find indexes
+  const nodeList = Array.from(document.getElementById('parent').children);
+  dragIndex = nodeList.indexOf(draggedElement);
+  dropIndex = nodeList.indexOf(targetElement);
+
+  // Replace elements
+  const parent = document.getElementById('parent');
+  parent.replaceChild(draggedElement, targetElement);
+  parent.insertBefore(clone, parent.children[dragIndex]);
+
+  // Reattach drag-and-drop handlers
+  attachHandlers(clone);
 }
 
-const dragdrop = (image) => {
+function attachHandlers(image) {
   image.ondragstart = drag;
   image.ondragover = allowDrop;
   image.ondrop = drop;
-};
+}
 
-images.forEach(dragdrop);
+images.forEach(attachHandlers);
